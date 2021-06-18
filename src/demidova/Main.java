@@ -18,7 +18,7 @@ public class Main {
         System.out.println(System.currentTimeMillis() - a);
     }
 
-    public static void manageTwoArrs(){
+    public synchronized static void manageTwoArrs(){
         float[] arr = new float[SIZE];
         fillArr(arr);
         float[] a = new float[HALF];
@@ -27,8 +27,10 @@ public class Main {
         System.arraycopy(arr, 0, a, 0, HALF);
         System.arraycopy(arr, HALF, b, 0, HALF);
 
-        new Thread(() -> calc(a)).start();
-        new Thread(() -> calc(b)).start();
+        Thread t1 = new Thread(() -> calc(a));
+        Thread t2 = new Thread(() -> calc(b));
+        t1.start();
+        t2.start();
 
        /* new Thread(() -> {
             float[] a1 = calc(a);
@@ -42,6 +44,13 @@ public class Main {
 */
         System.arraycopy(a, 0, arr, 0, HALF);
         System.arraycopy(b, 0, arr, HALF, HALF);
+
+        try {
+            t1.join();
+            t2.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         System.out.println(System.currentTimeMillis() - startTimeA);
 
     }
@@ -51,11 +60,10 @@ public class Main {
         }
     }
 
-    public  static float[] calc(float[] arr){
+    public  static void calc(float[] arr){
         for (int i = 0; i < arr.length; i++) {
             arr[i] = (float)(arr[i] * Math.sin(0.2f + i / 5) * Math.cos(0.2f + i / 5) * Math.cos(0.4f + i / 2));
         }
-        return  arr;
     }
 
 }
